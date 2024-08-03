@@ -28,10 +28,15 @@ func main() {
 		panic(err)
 	}
 
-	xmlRes, err := ParseXMLResponse(res)
+	// Parse XML response
+	xmlRes, err := soap.ParseXMLResponse(res)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(xmlRes)
+	// View structure of XML response
+	fmt.Println(xmlRes.Structure)
+
+	// Get value from XML response   // Key        // Type assertion           // To the moon! --------------------------------------------------------------------------------------------------------------------------------> You made it! :)
+	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"])
 }
