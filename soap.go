@@ -7,12 +7,28 @@ import (
 )
 
 // Send a SOAP http request
-func SoapCall(url string, contentType string, template string, values ...any) (*http.Response, error) {
-	request := fmt.Sprintf(template, values...)
+func SoapCall(url string, headers map[string]string, template string, values []any) (*http.Response, error) {
+	// Start http client
+	client := &http.Client{}
 
-	res, err := http.Post(url, contentType, bytes.NewBuffer([]byte(request)))
+	// Create request body from template and values
+	requestBody := fmt.Sprintf(template, values...)
+
+	// Create request
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
-		return res, err
+		return nil, err
+	}
+
+	// Add headers
+	for label, value := range headers {
+		request.Header.Add(label, value)
+	}
+
+	// Make request
+	res, err := client.Do(request)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil

@@ -12,10 +12,18 @@ func main() {
 	const url string = "https://www.w3schools.com/xml/tempconvert.asmx"
 
 	// Retrieve farenheit_to_celsius.xml template
-	template := soap.GetTemplate("farenheit_to_celsius.xml")
+	template := soap.GetTemplate("fahrenheit_to_celsius.xml")
+
+	// Set values based on template requirements
+	// In this case, the first and only required value is temperature
+	values := []any{"75"}
+
+	// Set headers
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/soap+xml; charset=utf-8"
 
 	// Make SOAP call with standard content/type
-	res, err := soap.SoapCall(url, "application/soap+xml; charset=utf-8", template)
+	res, err := soap.SoapCall(url, headers, template, values)
 	if err != nil {
 		// Handle error
 		fmt.Println(err)
@@ -28,5 +36,5 @@ func main() {
 	}
 
 	// Do something with response
-	fmt.Println(body)
+	fmt.Println(string(body))
 }
