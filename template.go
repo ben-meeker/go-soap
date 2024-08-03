@@ -12,6 +12,5 @@ func GetTemplate(filepath string) string {
 		fmt.Println(err)
 		return ""
 	}
-	fmt.Println("File contents:", string(file))
 	return string(file)
 }
