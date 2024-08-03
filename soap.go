@@ -8,6 +8,12 @@ import (
 
 // Send a SOAP http request
 func SoapCall(url string, headers map[string]string, template string, values []any) (*http.Response, error) {
+	// Verify parameter count matches template
+	err := VerifyParameterList(template, values)
+	if err != nil {
+		return nil, err
+	}
+
 	// Start http client
 	client := &http.Client{}
 

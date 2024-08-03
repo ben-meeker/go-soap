@@ -16,7 +16,7 @@ func main() {
 
 	// Set values based on template requirements
 	// In this case, the first and only required value is temperature
-	values := []any{"75"}
+	values := []any{75}
 
 	// Set headers
 	headers := make(map[string]string)
