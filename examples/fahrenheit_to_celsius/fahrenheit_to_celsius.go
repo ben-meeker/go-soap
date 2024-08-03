@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/ben-meeker/soap"
 )
@@ -26,15 +25,13 @@ func main() {
 	res, err := soap.SoapCall(url, headers, template, values)
 	if err != nil {
 		// Handle error
-		fmt.Println(err)
+		panic(err)
 	}
 
-	// Parse response body
-	body, err := io.ReadAll(res.Body)
+	xmlRes, err := ParseXMLResponse(res)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// Do something with response
-	fmt.Println(string(body))
+	fmt.Println(xmlRes)
 }
