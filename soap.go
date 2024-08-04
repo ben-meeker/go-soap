@@ -107,7 +107,7 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 			child := XMLObject{Contents: make(map[string]any), Parent: currentObject, Depth: depth}
 			// Append values to parent object
 			currentObject.Children = append(currentObject.Children, &child)
-			// Verify key doesn't already exist, if it does increment number
+			// Verify key doesn't already exist, if it does increment number to avoid conflict
 			_, doesExist := currentObject.Contents[match[0][1]]
 			if !doesExist {
 				currentObject.Contents[match[0][1]] = child
