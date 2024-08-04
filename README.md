@@ -117,7 +117,3 @@ Full code:
 
 ## Contribute
 If you want to contribute to this project, feel free to open a PR or an issue.
-
-
-## License
-This package is licensed under MIT license. See [LICENSE](./LICENSE) for details.
