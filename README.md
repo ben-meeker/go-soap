@@ -74,7 +74,7 @@ Please see the `examples` folder for working builds that use this library
 		fmt.Println(err)
 	}
    ```
-   This will parse the data into a series of `XMLObject` that contain a Contents field of type `map[string]any` . This may contain another `XMLObject` if nesting has occured, or will have a value designated by the key `value`
+   This will parse the data into a series of `XMLObject` that contain a `Contents` field of type `map[string]any` . This may contain another `XMLObject` if nesting has occured, or will have a value designated by the key `value`
 
 8. To view the structure of the response, print the `Structure` field of your `XMLResponse` object
    ```go
