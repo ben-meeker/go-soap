@@ -25,7 +25,7 @@ Please see the `examples` folder for working builds that use this library
 1. In your Go code, import the Soap package:
     ```go
     import (
-        "github.com/ben-meeker/soap"
+        "github.com/ben-meeker/go-soap"
     )
     ```
 
