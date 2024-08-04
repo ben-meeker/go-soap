@@ -15,7 +15,7 @@ The parsing of responses into generic objects is useful for handling dynamic XML
 You can install Soap using Go modules:
 
 ```bash
-go get github.com/ben-meeker/soap
+go get github.com/ben-meeker/go-soap
 ```
 
 ## Getting Started
