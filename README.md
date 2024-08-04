@@ -1,6 +1,6 @@
-# SOAP
+# Go-Soap
 
-Soap is an open-source library for handling SOAP requests and responses in Go. 
+Go-Soap is an open-source library for handling SOAP requests and responses in Go. 
 
 The parsing of responses into generic objects is useful for handling dynamic XML responses, or for testing phases where creating structs may not be worth the time. It may not be ideal for production use cases.
 
