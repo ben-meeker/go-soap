@@ -2,19 +2,17 @@ package soap
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"regexp"
 )
 
 // Retrieve a .xml file template from the specified path
-func GetTemplate(filepath string) string {
+func GetTemplate(filepath string) (string, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		return "", err
 	}
-	return string(file)
+	return string(file), nil
 }
 
 // Ensure that the number of parameters required matches that of the template
