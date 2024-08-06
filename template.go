@@ -2,6 +2,7 @@ package soap
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 )
@@ -24,10 +25,8 @@ func VerifyParameterList(template string, parameters []any) error {
 	matches := reg.FindAllStringIndex(template, -1)
 	templateParams := len(matches)
 
-	if params > templateParams {
-		return errors.New("Too many values provided to template")
-	} else if templateParams > params {
-		return errors.New("Not enough values passed to template")
+	if params != templateParams {
+		return errors.New("Invalid parameter count. Template wanted " + fmt.Sprint(templateParams) + ", got " + fmt.Sprint(params))
 	}
 
 	return nil
