@@ -126,7 +126,7 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Error:", err)
+		return nil, err
 	}
 
 	xmlResponse.Body = &rootObject
