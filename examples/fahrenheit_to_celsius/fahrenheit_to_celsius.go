@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ben-meeker/soap"
+	"github.com/ben-meeker/soap" // Will be go-soap on non-local imports
 )
 
 func main() {
@@ -11,7 +11,10 @@ func main() {
 	const url string = "https://www.w3schools.com/xml/tempconvert.asmx"
 
 	// Retrieve farenheit_to_celsius.xml template
-	template := soap.GetTemplate("fahrenheit_to_celsius.xml")
+	template, err := soap.GetTemplate("fahrenheit_to_celsius.xml")
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// Set values based on template requirements
 	// In this case, the first and only required value is temperature

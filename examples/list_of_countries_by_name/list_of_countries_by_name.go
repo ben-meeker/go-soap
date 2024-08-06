@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ben-meeker/soap"
+	"github.com/ben-meeker/soap" // Will be go-soap on non-local imports
 )
 
 func main() {
@@ -11,7 +11,10 @@ func main() {
 	const url string = "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso"
 
 	// Retrieve farenheit_to_celsius.xml template
-	template := soap.GetTemplate("list_of_countries_by_name.xml")
+	template, err := soap.GetTemplate("list_of_countries_by_name.xml")
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// Set values based on template requirements
 	// In this case, no values are required

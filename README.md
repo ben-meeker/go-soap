@@ -43,8 +43,12 @@ Please see the `examples` folder for working builds that use this library
 
 3. Use the `GetTemplate` function to load your template into Go
    ```go
-    template := soap.GetTemplate("fahrenheit_to_celsius.xml")
+    template, err := soap.GetTemplate("fahrenheit_to_celsius.xml")
+    if err != nil {
+		fmt.Println(err)
+	}
    ```
+   This will return an error if unable to fetch the template provided
 
 4. Set parameters as a `[]any` array. Ensure parameters are in the order they appear in your template
    ```go
