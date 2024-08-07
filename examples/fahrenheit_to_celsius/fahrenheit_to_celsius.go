@@ -2,9 +2,18 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ben-meeker/soap" // Will be go-soap on non-local imports
 )
+
+// Create struct to fill request body with
+// Fields must be exported or available in package, or you will get an error
+// populating them into the template
+type FahrenheitToCelsius struct {
+	Fahrenheit float64
+	Celsius    float64
+}
 
 func main() {
 	// Set endpoint URL
@@ -17,8 +26,10 @@ func main() {
 	}
 
 	// Set values based on template requirements
-	// In this case, the first and only required value is temperature
-	values := []any{75}
+	// In this case, the only required value is fahrenheit
+	values := FahrenheitToCelsius{
+		Fahrenheit: 75,
+	}
 
 	// Set headers
 	headers := make(map[string]string)
@@ -40,6 +51,8 @@ func main() {
 	// View structure of XML response
 	fmt.Println(xmlRes.Structure)
 
-	// Get value from XML response   // Key        // Type assertion           // To the moon! --------------------------------------------------------------------------------------------------------------------------------> You made it! :)
-	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"])
+	// Get value from XML response        // Key            // Type assertion        // To the moon! --------------------------------------------------------> You made it! :) Make sure to add string type assertion so you can convert the string to a type
+	celsiusString := xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"].(string)
+	strconv.ParseFloat(celsiusString, 64)
+	fmt.Println(values)
 }

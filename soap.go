@@ -39,7 +39,13 @@ func SoapCall(url string, headers map[string]string, template string, parameters
 	requestBody := template
 	for i := 0; i < values.NumField(); i++ {
 		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
+		// For debugging
+		fmt.Println(types.Field(i).Name)
+		fmt.Println(values.Field(i).Interface())
 	}
+
+	// For debugging
+	fmt.Println(requestBody)
 
 	// Verify parameters in request
 	err := VerifyParameters(requestBody)
