@@ -51,8 +51,14 @@ func main() {
 	// View structure of XML response
 	fmt.Println(xmlRes.Structure)
 
-	// Get value from XML response        // Key            // Type assertion        // To the moon! --------------------------------------------------------> You made it! :) Make sure to add string type assertion so you can convert the string to a type
-	celsiusString := xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"].(string)
-	strconv.ParseFloat(celsiusString, 64)
+	// Get value from XML response                         // Reference Children          // Key                                    // Value will always be a string
+	celsiusString := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["FahrenheitToCelsiusResponse"].Children["FahrenheitToCelsiusResult"].Value
+	// Convert value type to match struct
+	values.Celsius, err = strconv.ParseFloat(celsiusString, 64)
+
+	if err != nil {
+		// Handle error
+		fmt.Println(err)
+	}
 	fmt.Println(values)
 }

@@ -6,6 +6,18 @@ import (
 	"github.com/ben-meeker/soap" // Will be go-soap on non-local imports
 )
 
+// Create struct to fill request body with
+// Fields must be exported or available in package, or you will get an error
+// populating them into the template
+type ListOfContinentsByName struct {
+	Continents []Continent
+}
+
+type Continent struct {
+	Code string
+	Name string
+}
+
 func main() {
 	// Set endpoint URL
 	const url string = "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso"
@@ -18,14 +30,14 @@ func main() {
 
 	// Set values based on template requirements
 	// In this case, no values are required
-	values := []any{}
+	listOfContinents := ListOfContinentsByName{}
 
 	// Set headers
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/soap+xml; charset=utf-8"
 
 	// Make SOAP call with standard content/type
-	res, err := soap.SoapCall(url, headers, template, values)
+	res, err := soap.SoapCall(url, headers, template, listOfContinents)
 	if err != nil {
 		// Handle error
 		panic(err)
@@ -40,7 +52,20 @@ func main() {
 	// View structure of XML response
 	fmt.Println(xmlRes.Structure)
 
-	// Get values from XML response   // Key        // Type assertion           // To the moon! ------------------------------------------------------------------------------------------------------------------------------------------------Third country in list------------------------------------------------------> You made it! :)
-	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["m:ListOfContinentsByNameResponse"].(soap.XMLObject).Contents["m:ListOfContinentsByNameResult"].(soap.XMLObject).Contents["m:tContinent_3"].(soap.XMLObject).Contents["m:sCode"].(soap.XMLObject).Contents["value"])
-	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["m:ListOfContinentsByNameResponse"].(soap.XMLObject).Contents["m:ListOfContinentsByNameResult"].(soap.XMLObject).Contents["m:tContinent_3"].(soap.XMLObject).Contents["m:sName"].(soap.XMLObject).Contents["value"])
+	// Get continents from XML response                     // Reference Children          // Key
+	continents := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["m:ListOfContinentsByNameResponse"].Children["m:ListOfContinentsByNameResult"].Children
+
+	// Get values for each continent
+	for key, _ := range continents {
+		fmt.Println(key)
+		continentData := Continent{
+			Code: continents[key].Children["m:sCode"].Value,
+			Name: continents[key].Children["m:sName"].Value,
+		}
+		// Append to struct
+		listOfContinents.Continents = append(listOfContinents.Continents, continentData)
+	}
+
+	// Output struct
+	fmt.Println(listOfContinents)
 }

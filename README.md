@@ -2,8 +2,6 @@
 
 Go-Soap is an open-source library for handling SOAP requests and responses in Go. 
 
-The parsing of responses into generic objects is useful for handling dynamic XML responses, or for testing phases where creating structs may not be worth the time. It may not be ideal for production use cases.
-
 ## Features
 
 - [x] Easy to understand functions for making SOAP requests
@@ -29,94 +27,150 @@ Please see the `examples` folder for working builds that use this library
     )
     ```
 
-2. Create a new XML file template using `%v` as variable placeholders
+2. Create a struct to house relevant data
+   ```go
+   type FahrenheitToCelsius struct {
+	   Fahrenheit float64
+	   Celsius    float64
+   }
+   ```
+
+3. Create a new XML file template using the struct field name inside curly braces as variable placeholders
     ```xml
-        <?xml version="1.0" encoding="utf-8"?>
-          <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
-            <soap12:Body>
-              <FahrenheitToCelsius xmlns="https://www.w3schools.com/xml/">
-                <Fahrenheit>%v</Fahrenheit>
-                </FahrenheitToCelsius>
-            </soap12:Body>
-          </soap12:Envelope>
+   <?xml version="1.0" encoding="utf-8"?>
+   <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+    <soap12:Body>
+      <FahrenheitToCelsius xmlns="https://www.w3schools.com/xml/">
+         <Fahrenheit>{Fahrenheit}</Fahrenheit>
+      </FahrenheitToCelsius>
+    </soap12:Body>
+   </soap12:Envelope>
     ```
 
-3. Use the `GetTemplate` function to load your template into Go
+4. Set your endpoint URL
    ```go
-    template, err := soap.GetTemplate("fahrenheit_to_celsius.xml")
-    if err != nil {
-		fmt.Println(err)
+   const url string = "https://www.w3schools.com/xml/tempconvert.asmx"
+   ```
+
+5. Use the `GetTemplate` function to load your template into Go
+   ```go
+   template, err := soap.GetTemplate("fahrenheit_to_celsius.xml")
+   if err != nil {
+	   fmt.Println(err)
 	}
    ```
    This will return an error if unable to fetch the template provided
 
-4. Set parameters as a `[]any` array. Ensure parameters are in the order they appear in your template
-   ```go
-    values := []any{75}
-   ```
 
-5. Create headers in a type `map[string]string` 
+6. Create headers in a type `map[string]string` 
    ```go
-    headers := make(map[string]string)
+   headers := make(map[string]string)
 	headers["Content-Type"] = "application/soap+xml; charset=utf-8"
    ```
 
-6. Use the `SoapCall` function to make the request
+7. Use the `SoapCall` function to make the request
    ```go
-   	res, err := soap.SoapCall(url, headers, template, values)
+   res, err := soap.SoapCall(url, headers, template, values)
 	if err != nil {
-		// Handle error
 		panic(err)
 	}
    ```
    This will look at the number of paramters provided, and compare it to the number of parameters detected in your template designated by the `%v` placeholder. If they do not match, or there is an error making the request, the function will return an error.
 
-7. Use the `ParseXMLResponse` function to create a readable object from the XML response
+8. Use the `ParseXMLResponse` function to create a readable object from the XML response
    ```go
-    xmlRes, err := soap.ParseXMLResponse(res)
+   xmlRes, err := soap.ParseXMLResponse(res)
 	if err != nil {
 		fmt.Println(err)
 	}
    ```
    This will parse the data into a series of `XMLObject` that contain a `Contents` field of type `map[string]any` . This may contain another `XMLObject` if nesting has occured, or will have a value designated by the key `value`
 
-8. To view the structure of the response, print the `Structure` field of your `XMLResponse` object
+9. To view the structure of the response, print the `Structure` field of your `XMLResponse` object
    ```go
     fmt.Println(xmlRes.Structure)
    ```
 
-9. To access a value from the object, use the syntax below to drill down to the location, and access it using the `value` key
+10. To access a value from the object, use the syntax below to drill down to the location, and access it using `.Value` this will always be a `string`
    ```go
-	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"])
+   celsiusString := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["FahrenheitToCelsiusResponse"].Children["FahrenheitToCelsiusResult"].Value
    ```
-   This is lengthy syntax, but allows for dynamic structures to be generated
+
+11. Use the `strconv` package to convert your value to a type that matches your struct and assign it to a field
+   ```go
+   values.Celsius, err = strconv.ParseFloat(celsiusString, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(values)
+   ```
 
 Full code:
    ```go
-	const url string = "https://www.w3schools.com/xml/tempconvert.asmx"
+	package main
 
-	template := soap.GetTemplate("fahrenheit_to_celsius.xml")
+   import (
+      "fmt"
+      "strconv"
 
-	values := []any{75}
+      "github.com/ben-meeker/soap" // Will be go-soap on non-local imports
+   )
 
-	headers := make(map[string]string)
-	headers["Content-Type"] = "application/soap+xml; charset=utf-8"
+   // Create struct to fill request body with
+   // Fields must be exported or available in package, or you will get an error
+   // populating them into the template
+   type FahrenheitToCelsius struct {
+      Fahrenheit float64
+      Celsius    float64
+   }
 
-	res, err := soap.SoapCall(url, headers, template, values)
-	if err != nil {
-		// Handle error
-		panic(err)
-	}
+   func main() {
+      // Set endpoint URL
+      const url string = "https://www.w3schools.com/xml/tempconvert.asmx"
 
-	xmlRes, err := soap.ParseXMLResponse(res)
-	if err != nil {
-        // Handle error
-		fmt.Println(err)
-	}
+      // Retrieve farenheit_to_celsius.xml template
+      template, err := soap.GetTemplate("fahrenheit_to_celsius.xml")
+      if err != nil {
+         fmt.Println(err)
+      }
 
-	fmt.Println(xmlRes.Structure)
+      // Set values based on template requirements
+      // In this case, the only required value is fahrenheit
+      values := FahrenheitToCelsius{
+         Fahrenheit: 75,
+      }
 
-	fmt.Println(xmlRes.Body.Contents["soap:Envelope"].(soap.XMLObject).Contents["soap:Body"].(soap.XMLObject).Contents["FahrenheitToCelsiusResponse"].(soap.XMLObject).Contents["FahrenheitToCelsiusResult"].(soap.XMLObject).Contents["value"])
+      // Set headers
+      headers := make(map[string]string)
+      headers["Content-Type"] = "application/soap+xml; charset=utf-8"
+
+      // Make SOAP call with standard content/type
+      res, err := soap.SoapCall(url, headers, template, values)
+      if err != nil {
+         // Handle error
+         panic(err)
+      }
+
+      // Parse XML response
+      xmlRes, err := soap.ParseXMLResponse(res)
+      if err != nil {
+         fmt.Println(err)
+      }
+
+      // View structure of XML response
+      fmt.Println(xmlRes.Structure)
+
+      // Get value from XML response                         // Reference Children          // Key                                    // Value will always be a string
+      celsiusString := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["FahrenheitToCelsiusResponse"].Children["FahrenheitToCelsiusResult"].Value
+      // Convert value type to match struct
+      values.Celsius, err = strconv.ParseFloat(celsiusString, 64)
+      if err != nil {
+         // Handle error
+         fmt.Println(err)
+      }
+      fmt.Println(values)
+   }
+
    ```
 
 ## Contribute

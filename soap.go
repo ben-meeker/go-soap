@@ -12,20 +12,20 @@ import (
 )
 
 type XMLResponse struct {
-	HTTPResponse *http.Response
-	Body         *XMLObject
+	HTTPResponse *http.Response `json:"http_response"`
+	Body         *XMLObject     `json:"body"`
 
 	// Pretty print string of structure for help getting values
-	Structure string
+	Structure string `json:"structure"`
 }
 
 type XMLObject struct {
-	Contents map[string]any
-	Parent   *XMLObject
-	Children []*XMLObject
+	Parent   *XMLObject            `json:"parent"`
+	Children map[string]*XMLObject `json:"children"`
+	Value    string
 
 	// Times nested
-	Depth int
+	Depth int `json:"depth"`
 }
 
 // Send a POST http request with SOAP payload
@@ -39,13 +39,7 @@ func SoapCall(url string, headers map[string]string, template string, parameters
 	requestBody := template
 	for i := 0; i < values.NumField(); i++ {
 		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
-		// For debugging
-		fmt.Println(types.Field(i).Name)
-		fmt.Println(values.Field(i).Interface())
 	}
-
-	// For debugging
-	fmt.Println(requestBody)
 
 	// Verify parameters in request
 	err := VerifyParameters(requestBody)
@@ -76,7 +70,7 @@ func SoapCall(url string, headers map[string]string, template string, parameters
 func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 	// Initalize root object
 	xmlResponse := XMLResponse{HTTPResponse: response}
-	rootObject := XMLObject{Contents: make(map[string]any)}
+	rootObject := XMLObject{Children: make(map[string]*XMLObject)}
 	currentObject := &rootObject
 	depth := 0
 
@@ -116,17 +110,17 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 			reg := regexp.MustCompile(`<(\S+)[\s>]`)
 			match := reg.FindAllStringSubmatch(line, 1)
 			// Create XML Object record
-			child := XMLObject{Contents: make(map[string]any), Parent: currentObject, Depth: depth}
+			child := XMLObject{Children: make(map[string]*XMLObject), Parent: currentObject, Depth: depth}
 			// Append values to parent object
-			currentObject.Children = append(currentObject.Children, &child)
+			currentObject.Children[match[0][1]] = &child
 			// Verify key doesn't already exist, if it does increment number to avoid conflict
-			_, doesExist := currentObject.Contents[match[0][1]]
+			_, doesExist := currentObject.Children[match[0][1]]
 			if !doesExist {
-				currentObject.Contents[match[0][1]] = child
+				currentObject.Children[match[0][1]] = &child
 				// Print for format reference
 				xmlResponse.Structure = xmlResponse.Structure + tab + match[0][1] + "\n"
 			} else {
-				currentObject.Contents[match[0][1]+"_"+fmt.Sprint(len(currentObject.Children))] = child
+				currentObject.Children[match[0][1]+"_"+fmt.Sprint(len(currentObject.Children))] = &child
 				// Print for format reference
 				xmlResponse.Structure = xmlResponse.Structure + tab + match[0][1] + "_" + fmt.Sprint(len(currentObject.Children)) + "\n"
 			}
@@ -134,7 +128,7 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 			currentObject = &child
 		} else {
 			// Assign value
-			currentObject.Contents["value"] = line
+			currentObject.Value = line
 		}
 	}
 	if err := scanner.Err(); err != nil {
