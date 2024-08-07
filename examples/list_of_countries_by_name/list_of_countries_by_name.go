@@ -52,7 +52,7 @@ func main() {
 	// View structure of XML response
 	fmt.Println(xmlRes.Structure)
 
-	// Get continents from XML response                     // Reference Children          // Key
+	// Get continents from XML response                // Reference Children          // Key
 	continents := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["m:ListOfContinentsByNameResponse"].Children["m:ListOfContinentsByNameResult"].Children
 
 	// Get values for each continent

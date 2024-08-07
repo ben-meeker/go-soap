@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"regexp"
 	"strings"
 )
@@ -34,12 +33,7 @@ func SoapCall(url string, headers map[string]string, template string, parameters
 	client := &http.Client{}
 
 	// Create request body from template and values
-	values := reflect.ValueOf(parameters)
-	types := values.Type()
-	requestBody := template
-	for i := 0; i < values.NumField(); i++ {
-		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
-	}
+	requestBody := FillTemplate(template, parameters)
 
 	// Verify parameters in request
 	err := VerifyParameters(requestBody)

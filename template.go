@@ -2,8 +2,11 @@ package soap
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
 	"regexp"
+	"strings"
 )
 
 // Retrieve a .xml file template from the specified path
@@ -29,4 +32,15 @@ func VerifyParameters(requestXML string) error {
 	}
 
 	return nil
+}
+
+// Fill a template with fields from given struct
+func FillTemplate(template string, parameters any) string {
+	values := reflect.ValueOf(parameters)
+	types := values.Type()
+	requestBody := template
+	for i := 0; i < values.NumField(); i++ {
+		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
+	}
+	return requestBody
 }
