@@ -2,7 +2,6 @@ package soap
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"regexp"
 )
@@ -16,17 +15,17 @@ func GetTemplate(filepath string) (string, error) {
 	return string(file), nil
 }
 
-// Ensure that the number of parameters required matches that of the template
-func VerifyParameterList(template string, parameters []any) error {
-	// Read length of parameters
-	params := len(parameters)
-	// Get number of parameters in template
-	reg := regexp.MustCompile(">%v<")
-	matches := reg.FindAllStringIndex(template, -1)
-	templateParams := len(matches)
-
-	if params != templateParams {
-		return errors.New("Invalid parameter count. Template wanted " + fmt.Sprint(templateParams) + ", got " + fmt.Sprint(params))
+// Ensure that all parameter placeholders have been filled with values
+func VerifyParameters(requestXML string) error {
+	// Get unfilled parameters
+	reg := regexp.MustCompile("{.+}")
+	matches := reg.FindAllString(requestXML, -1)
+	var errString string
+	if len(matches) > 0 {
+		for _, val := range matches {
+			errString = errString + val + " "
+		}
+		return errors.New("The following placeholders are missing values: " + errString)
 	}
 
 	return nil

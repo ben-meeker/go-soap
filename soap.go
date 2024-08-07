@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -28,18 +29,23 @@ type XMLObject struct {
 }
 
 // Send a POST http request with SOAP payload
-func SoapCall(url string, headers map[string]string, template string, values []any) (*http.Response, error) {
-	// Verify parameter count matches template
-	err := VerifyParameterList(template, values)
-	if err != nil {
-		return nil, err
-	}
-
+func SoapCall(url string, headers map[string]string, template string, parameters any) (*http.Response, error) {
 	// Start http client
 	client := &http.Client{}
 
 	// Create request body from template and values
-	requestBody := fmt.Sprintf(template, values...)
+	values := reflect.ValueOf(parameters)
+	types := values.Type()
+	requestBody := template
+	for i := 0; i < values.NumField(); i++ {
+		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
+	}
+
+	// Verify parameters in request
+	err := VerifyParameters(requestBody)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create request
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(requestBody)))
