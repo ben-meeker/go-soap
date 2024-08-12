@@ -57,7 +57,6 @@ func main() {
 
 	// Get values for each continent
 	for key, _ := range continents {
-		fmt.Println(key)
 		continentData := Continent{
 			Code: continents[key].Children["m:sCode"].Value,
 			Name: continents[key].Children["m:sName"].Value,

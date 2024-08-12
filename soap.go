@@ -94,7 +94,9 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 			currentObject = currentObject.Parent
 			depth--
 		} else if strings.Contains(line, "<") {
-			// Get indentation level
+			// Set counter for duplicate objects
+			counter := 0
+			// Set indentation level
 			depth++
 			var tab string
 			for range depth {
@@ -105,8 +107,6 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 			match := reg.FindAllStringSubmatch(line, 1)
 			// Create XML Object record
 			child := XMLObject{Children: make(map[string]*XMLObject), Parent: currentObject, Depth: depth}
-			// Append values to parent object
-			currentObject.Children[match[0][1]] = &child
 			// Verify key doesn't already exist, if it does increment number to avoid conflict
 			_, doesExist := currentObject.Children[match[0][1]]
 			if !doesExist {
@@ -114,9 +114,16 @@ func ParseXMLResponse(response *http.Response) (*XMLResponse, error) {
 				// Print for format reference
 				xmlResponse.Structure = xmlResponse.Structure + tab + match[0][1] + "\n"
 			} else {
-				currentObject.Children[match[0][1]+"_"+fmt.Sprint(len(currentObject.Children))] = &child
-				// Print for format reference
-				xmlResponse.Structure = xmlResponse.Structure + tab + match[0][1] + "_" + fmt.Sprint(len(currentObject.Children)) + "\n"
+				for {
+					counter++
+					_, doesExist = currentObject.Children[match[0][1]+"_"+fmt.Sprint(counter)]
+					if !doesExist {
+						currentObject.Children[match[0][1]+"_"+fmt.Sprint(len(currentObject.Children))] = &child
+						// Print for format reference
+						xmlResponse.Structure = xmlResponse.Structure + tab + match[0][1] + "_" + fmt.Sprint(counter) + "\n"
+						break
+					}
+				}
 			}
 			// Make this the current object
 			currentObject = &child
