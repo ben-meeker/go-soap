@@ -36,11 +36,29 @@ func VerifyParameters(requestXML string) error {
 
 // Fill a template with fields from given struct
 func FillTemplate(template string, parameters any) string {
-	values := reflect.ValueOf(parameters)
-	types := values.Type()
 	requestBody := template
-	for i := 0; i < values.NumField(); i++ {
-		requestBody = strings.ReplaceAll(requestBody, "{"+types.Field(i).Name+"}", fmt.Sprint(values.Field(i).Interface()))
+	reg := regexp.MustCompile("{.+}")
+	matches := reg.FindAllString(requestBody, -1)
+	for _, placeholder := range matches {
+		var value reflect.Value
+		values := reflect.ValueOf(parameters)
+		if strings.Contains(placeholder, ".") {
+			noBrackets := strings.Trim(placeholder, "{")
+			noBrackets = strings.Trim(noBrackets, "}")
+			split := strings.Split(noBrackets, ".")
+			for i := range split {
+				if i == len(split)-1 {
+					requestBody = strings.ReplaceAll(requestBody, placeholder, fmt.Sprint(value.FieldByName(split[i])))
+				} else {
+					value = values.FieldByName(split[i])
+				}
+			}
+		} else {
+			noBrackets := strings.Trim(placeholder, "{")
+			noBrackets = strings.Trim(noBrackets, "}")
+			requestBody = strings.ReplaceAll(requestBody, placeholder, fmt.Sprint(values.FieldByName(noBrackets)))
+		}
 	}
+
 	return requestBody
 }

@@ -35,7 +35,7 @@ Please see the `examples` folder for working builds that use this library
    }
    ```
 
-3. Create a new XML file template using the struct field name inside curly braces as variable placeholders
+3. Create a new XML file template using the struct field name inside curly braces as variable placeholders. You can also dotwalk by using the following syntax, if your structs are nested: {InputValues.Fahrenheit} (see examples folder)
     ```xml
    <?xml version="1.0" encoding="utf-8"?>
    <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
