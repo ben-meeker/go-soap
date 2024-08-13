@@ -40,17 +40,19 @@ func FillTemplate(template string, parameters any) string {
 	reg := regexp.MustCompile("{.+}")
 	matches := reg.FindAllString(requestBody, -1)
 	for _, placeholder := range matches {
-		var value reflect.Value
 		values := reflect.ValueOf(parameters)
+		value := values
 		if strings.Contains(placeholder, ".") {
 			noBrackets := strings.Trim(placeholder, "{")
 			noBrackets = strings.Trim(noBrackets, "}")
 			split := strings.Split(noBrackets, ".")
 			for i := range split {
 				if i == len(split)-1 {
-					requestBody = strings.ReplaceAll(requestBody, placeholder, fmt.Sprint(value.FieldByName(split[i])))
+					val := value.FieldByName(split[i])
+					requestBody = strings.ReplaceAll(requestBody, placeholder, fmt.Sprint(val))
+					break
 				} else {
-					value = values.FieldByName(split[i])
+					value = value.FieldByName(split[i])
 				}
 			}
 		} else {

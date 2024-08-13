@@ -10,17 +10,24 @@ import (
 // Create struct to fill request body with
 // Fields must be exported or available in package, or you will get an error
 // populating them into the template
+//
+// Nested structs are used here to show dot walking
 type FahrenheitToCelsius struct {
 	InputValues  Input
 	OutputValues Output
 }
 
 type Input struct {
-	Fahrenheit float64
+	Temperature Temperature
 }
 
 type Output struct {
-	Celsius float64
+	Temperature Temperature
+}
+
+type Temperature struct {
+	Fahrenheit float64
+	Celsius    float64
 }
 
 func main() {
@@ -35,12 +42,12 @@ func main() {
 
 	// Set values based on template requirements
 	// In this case, the only required value is fahrenheit
-	input := Input{
-		Fahrenheit: 75,
-	}
-
 	values := FahrenheitToCelsius{
-		InputValues: input,
+		InputValues: Input{
+			Temperature: Temperature{
+				Fahrenheit: 75,
+			},
+		},
 	}
 
 	// Set headers
@@ -66,10 +73,12 @@ func main() {
 	// Get value from XML response                         // Reference Children          // Key                                    // Value will always be a string
 	celsiusString := xmlRes.Body.Children["soap:Envelope"].Children["soap:Body"].Children["FahrenheitToCelsiusResponse"].Children["FahrenheitToCelsiusResult"].Value
 	// Convert value type to match struct
-	values.OutputValues.Celsius, err = strconv.ParseFloat(celsiusString, 64)
+	values.OutputValues.Temperature.Celsius, err = strconv.ParseFloat(celsiusString, 64)
 
 	if err != nil {
 		// Handle error
 		fmt.Println(err)
 	}
+
+	fmt.Println(values)
 }
