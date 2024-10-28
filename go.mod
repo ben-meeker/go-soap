@@ -1,3 +1,3 @@
-module github.com/ben-meeker/soap
+module github.com/ben-meeker/go-soap
 
 go 1.22.5
