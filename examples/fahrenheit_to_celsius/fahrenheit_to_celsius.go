@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/ben-meeker/soap" // Will be go-soap on non-local imports
+	"github.com/ben-meeker/go-soap" // Will be go-soap on non-local imports
 )
 
 // Create struct to fill request body with
